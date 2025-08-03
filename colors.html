@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chaotic Abstract Pattern Generator</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Inter', sans-serif;
+        }
+        canvas {
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.1);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            padding: 10px 20px;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        button {
+            background: #fff;
+            color: #111;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-family: inherit;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s ease, background 0.2s ease;
+        }
+        button:hover {
+            transform: scale(1.05);
+        }
+        button:active {
+            transform: scale(0.98);
+            background: #eee;
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <canvas id="abstractCanvas"></canvas>
+
+    <div class="controls">
+        <button id="regenerateButton">Generate New</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('abstractCanvas');
+        const ctx = canvas.getContext('2d');
+        const regenerateButton = document.getElementById('regenerateButton');
+
+        /**
+         * Generates a random number within a given range.
+         * @param {number} min - The minimum value.
+         * @param {number} max - The maximum value.
+         * @returns {number} A random number between min and max.
+         */
+        function randomInRange(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+
+        /**
+         * Generates a random vibrant HSL color string.
+         * @returns {string} An HSL color string.
+         */
+        function getRandomColor() {
+            const hue = randomInRange(0, 360);
+            const saturation = randomInRange(90, 100);
+            const lightness = randomInRange(50, 70);
+            return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+        }
+
+        /**
+         * Generates the abstract art on the canvas.
+         */
+        function generateArt() {
+            // 1. Set canvas size.
+            const aspectRatio = 16 / 9;
+            let width = window.innerWidth * 0.9;
+            let height = width / aspectRatio;
+
+            if (height > window.innerHeight * 0.9) {
+                height = window.innerHeight * 0.9;
+                width = height * aspectRatio;
+            }
+            canvas.width = width;
+            canvas.height = height;
+            
+            // --- Configuration ---
+            // Increased shape count for more complex patterns.
+            const shapeCount = randomInRange(50, 80); 
+            // Wider blur range for more varied smoothness.
+            const blurRadius = Math.max(width, height) / randomInRange(5, 12); 
+
+            // 2. Apply filters.
+            ctx.filter = `blur(${blurRadius}px) saturate(170%) contrast(110%)`;
+            
+            // Define possible blend modes for chaotic interactions
+            const blendModes = ['source-over', 'lighten', 'overlay', 'color-dodge', 'hard-light', 'difference'];
+
+            // 3. Draw a variety of random, multi-colored shapes
+            for (let i = 0; i < shapeCount; i++) {
+                // Set a random blend mode for this shape for unpredictable color mixing
+                ctx.globalCompositeOperation = blendModes[Math.floor(Math.random() * blendModes.length)];
+
+                // Create a multi-color radial gradient for each shape
+                const x1 = Math.random() * width;
+                const y1 = Math.random() * height;
+                const r1 = 0;
+                const x2 = x1 + randomInRange(-width * 0.1, width * 0.1);
+                const y2 = y1 + randomInRange(-height * 0.1, height * 0.1);
+                const r2 = randomInRange(0.1, 0.5) * Math.min(width, height);
+                
+                const gradient = ctx.createRadialGradient(x1, y1, r1, x2, y2, r2);
+                
+                // Add more random color stops to the gradient for richer color blends.
+                const colorStops = Math.floor(randomInRange(4, 8)); 
+                for(let j = 0; j < colorStops; j++) {
+                    gradient.addColorStop(j / (colorStops - 1), getRandomColor());
+                }
+                ctx.fillStyle = gradient;
+                ctx.strokeStyle = gradient; // Also apply to stroke for new shapes
+                ctx.lineWidth = randomInRange(5, 30);
+
+
+                // Randomly choose which shape to draw
+                const shapeType = Math.random();
+
+                if (shapeType < 0.5) {
+                    // --- Draw a Gradient Circle ---
+                    ctx.beginPath();
+                    ctx.arc(x2, y2, r2, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (shapeType < 0.8) {
+                    // --- Draw a Gradient Rectangle ---
+                    const rectWidth = randomInRange(0.2, 1.0) * width;
+                    const rectHeight = randomInRange(0.2, 1.0) * height;
+                    const rotation = randomInRange(0, Math.PI * 2);
+                    
+                    ctx.save();
+                    ctx.translate(x1, y1);
+                    ctx.rotate(rotation);
+                    ctx.fillRect(-rectWidth / 2, -rectHeight / 2, rectWidth, rectHeight);
+                    ctx.restore();
+                } else {
+                    // --- NEW: Draw a thick, random Bezier Curve for more unpredictability ---
+                    ctx.beginPath();
+                    ctx.moveTo(randomInRange(0, width), randomInRange(0, height)); // Start point
+                    ctx.bezierCurveTo(
+                        randomInRange(0, width), randomInRange(0, height), // Control point 1
+                        randomInRange(0, width), randomInRange(0, height), // Control point 2
+                        randomInRange(0, width), randomInRange(0, height)  // End point
+                    );
+                    ctx.stroke();
+                }
+            }
+            
+            // Reset filters and blend modes for any future drawing (like UI)
+            ctx.filter = 'none';
+            ctx.globalCompositeOperation = 'source-over';
+        }
+
+        // --- Event Listeners ---
+        regenerateButton.addEventListener('click', generateArt);
+        window.addEventListener('resize', generateArt);
+
+        // Generate the initial artwork on load
+        generateArt();
+    </script>
+</body>
+</html>
