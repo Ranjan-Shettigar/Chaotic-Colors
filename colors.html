@@ -70,6 +70,8 @@
         const ctx = canvas.getContext('2d');
         const regenerateButton = document.getElementById('regenerateButton');
 
+        let colorPalette = []; // Will hold the current art's palette
+
         /**
          * Generates a random number within a given range.
          * @param {number} min - The minimum value.
@@ -81,20 +83,49 @@
         }
 
         /**
-         * Generates a random vibrant HSL color string.
+         * Picks a random color from the generated palette with slight variations.
          * @returns {string} An HSL color string.
          */
         function getRandomColor() {
-            const hue = randomInRange(0, 360);
+            // Pick a random base hue from the current palette
+            const baseColor = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+            
+            // Add slight variations to lightness and saturation for more dynamism
             const saturation = randomInRange(90, 100);
             const lightness = randomInRange(50, 70);
-            return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+            return `hsl(${baseColor.h}, ${saturation}%, ${lightness}%)`;
+        }
+
+        /**
+         * Generates a harmonious color palette based on a random color scheme.
+         */
+        function generateColorPalette() {
+            const baseHue = randomInRange(0, 360);
+            const schemeType = Math.random();
+            
+            colorPalette = [{ h: baseHue }]; // Start with the base color
+
+            if (schemeType < 0.33) { // Analogous: colors next to each other
+                colorPalette.push({ h: (baseHue + 30) % 360 });
+                colorPalette.push({ h: (baseHue + 60) % 360 });
+                colorPalette.push({ h: (baseHue - 30 + 360) % 360 });
+            } else if (schemeType < 0.66) { // Triadic: 3 evenly spaced colors
+                colorPalette.push({ h: (baseHue + 120) % 360 });
+                colorPalette.push({ h: (baseHue + 240) % 360 });
+            } else { // Split-Complementary: a base color and two adjacent to its complement
+                const complement = (baseHue + 180) % 360;
+                colorPalette.push({ h: (complement - 30 + 360) % 360 });
+                colorPalette.push({ h: (complement + 30) % 360 });
+            }
         }
 
         /**
          * Generates the abstract art on the canvas.
          */
         function generateArt() {
+            // 0. Generate a new harmonious color palette for this artwork.
+            generateColorPalette();
+
             // 1. Set canvas size.
             const aspectRatio = 16 / 9;
             let width = window.innerWidth * 0.9;
@@ -147,13 +178,11 @@
                 // Randomly choose which shape to draw
                 const shapeType = Math.random();
 
-                if (shapeType < 0.5) {
-                    // --- Draw a Gradient Circle ---
+                if (shapeType < 0.4) { // Circle
                     ctx.beginPath();
                     ctx.arc(x2, y2, r2, 0, Math.PI * 2);
                     ctx.fill();
-                } else if (shapeType < 0.8) {
-                    // --- Draw a Gradient Rectangle ---
+                } else if (shapeType < 0.7) { // Rectangle
                     const rectWidth = randomInRange(0.2, 1.0) * width;
                     const rectHeight = randomInRange(0.2, 1.0) * height;
                     const rotation = randomInRange(0, Math.PI * 2);
@@ -163,8 +192,7 @@
                     ctx.rotate(rotation);
                     ctx.fillRect(-rectWidth / 2, -rectHeight / 2, rectWidth, rectHeight);
                     ctx.restore();
-                } else {
-                    // --- NEW: Draw a thick, random Bezier Curve for more unpredictability ---
+                } else if (shapeType < 0.9) { // Bezier Curve
                     ctx.beginPath();
                     ctx.moveTo(randomInRange(0, width), randomInRange(0, height)); // Start point
                     ctx.bezierCurveTo(
@@ -173,6 +201,22 @@
                         randomInRange(0, width), randomInRange(0, height)  // End point
                     );
                     ctx.stroke();
+                } else {
+                    // --- NEW: Draw a random filled Polygon ---
+                    const sides = Math.floor(randomInRange(3, 8));
+                    const polyRadius = r2 * randomInRange(0.8, 1.5);
+                    ctx.save();
+                    ctx.translate(x1, y1);
+                    ctx.rotate(randomInRange(0, Math.PI * 2));
+                    ctx.beginPath();
+                    ctx.moveTo(polyRadius, 0);
+                    for (let k = 1; k < sides; k++) {
+                        const angle = (k / sides) * Math.PI * 2;
+                        ctx.lineTo(Math.cos(angle) * polyRadius, Math.sin(angle) * polyRadius);
+                    }
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.restore();
                 }
             }
             
