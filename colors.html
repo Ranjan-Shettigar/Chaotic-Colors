@@ -66,6 +66,7 @@
     <div class="controls">
         <button id="regenerateButton">Generate New</button>
         <button id="downloadButton">Download 4K</button>
+        <button id="toggleResolutionButton">Toggle 4K View</button>
     </div>
 
     <script>
@@ -73,9 +74,11 @@
         const ctx = canvas.getContext('2d');
         const regenerateButton = document.getElementById('regenerateButton');
         const downloadButton = document.getElementById('downloadButton');
+        const toggleResolutionButton = document.getElementById('toggleResolutionButton');
 
         let colorPalette = []; // Will hold the current art's palette
         let currentArtConfig = null; // Will store the current art configuration
+        let is4KMode = false; // Track whether 4K rendering is enabled
 
         /**
          * Generates a random number within a given range.
@@ -133,13 +136,36 @@
 
             // 1. Set canvas size.
             const aspectRatio = 16 / 9;
-            let width = window.innerWidth * 0.9;
-            let height = width / aspectRatio;
+            let width, height;
+            
+            if (is4KMode) {
+                // 4K resolution (3840x2160)
+                width = 3840;
+                height = 2160;
+                
+                // Scale down if necessary to fit viewport
+                const maxWidth = window.innerWidth * 0.95;
+                const maxHeight = window.innerHeight * 0.95;
+                const scale = Math.min(maxWidth / width, maxHeight / height);
+                
+                // Apply scaling for display (actual canvas resolution remains 4K)
+                canvas.style.width = `${width * scale}px`;
+                canvas.style.height = `${height * scale}px`;
+            } else {
+                // Regular resolution
+                width = window.innerWidth * 0.9;
+                height = width / aspectRatio;
 
-            if (height > window.innerHeight * 0.9) {
-                height = window.innerHeight * 0.9;
-                width = height * aspectRatio;
+                if (height > window.innerHeight * 0.9) {
+                    height = window.innerHeight * 0.9;
+                    width = height * aspectRatio;
+                }
+                
+                // Reset any custom styling
+                canvas.style.width = '';
+                canvas.style.height = '';
             }
+            
             canvas.width = width;
             canvas.height = height;
             
@@ -392,9 +418,19 @@
             link.click();
         }
 
+        /**
+         * Toggles between normal and 4K resolution modes
+         */
+        function toggleResolution() {
+            is4KMode = !is4KMode;
+            toggleResolutionButton.textContent = is4KMode ? "Normal Resolution" : "Toggle 4K View";
+            generateArt();
+        }
+
         // --- Event Listeners ---
         regenerateButton.addEventListener('click', generateArt);
         downloadButton.addEventListener('click', downloadArt4K);
+        toggleResolutionButton.addEventListener('click', toggleResolution);
         window.addEventListener('resize', generateArt);
 
         // Generate the initial artwork on load
