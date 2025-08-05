@@ -35,6 +35,10 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
             display: flex;
             gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: auto;
+            max-width: 90vw;
         }
         button {
             background: #fff;
@@ -47,13 +51,44 @@
             font-size: 16px;
             cursor: pointer;
             transition: transform 0.2s ease, background 0.2s ease;
+            touch-action: manipulation;
+            min-height: 44px; /* Minimum touch target size */
+            min-width: 44px;
         }
-        button:hover {
-            transform: scale(1.05);
+        
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            .controls {
+                bottom: 16px;
+                padding: 10px;
+                gap: 10px;
+                flex-direction: row;
+                width: calc(100% - 32px);
+                max-width: 400px;
+            }
+            
+            button {
+                flex: 1;
+                padding: 12px 16px;
+                font-size: 14px;
+                min-width: 80px;
+                white-space: nowrap;
+            }
         }
-        button:active {
-            transform: scale(0.98);
-            background: #eee;
+        
+        @media (max-width: 480px) {
+            .controls {
+                padding: 8px;
+                gap: 8px;
+                bottom: 12px;
+            }
+            
+            button {
+                padding: 10px;
+                font-size: 13px;
+                min-width: 70px;
+                flex-basis: 0;
+            }
         }
     </style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -64,9 +99,9 @@
     <canvas id="abstractCanvas"></canvas>
 
     <div class="controls">
-        <button id="regenerateButton">Generate New</button>
-        <button id="downloadButton">Download 4K</button>
-        <button id="toggleResolutionButton">Toggle 4K View</button>
+        <button id="regenerateButton">New</button>
+        <button id="downloadButton">Download</button>
+        <button id="toggleResolutionButton">4K</button>
     </div>
 
     <script>
@@ -423,7 +458,7 @@
          */
         function toggleResolution() {
             is4KMode = !is4KMode;
-            toggleResolutionButton.textContent = is4KMode ? "Normal Resolution" : "Toggle 4K View";
+            toggleResolutionButton.textContent = is4KMode ? "HD" : "4K";
             generateArt();
         }
 
@@ -436,5 +471,7 @@
         // Generate the initial artwork on load
         generateArt();
     </script>
+</body>
+</html>
 </body>
 </html>
